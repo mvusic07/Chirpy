@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync/atomic"
 )
 
@@ -36,6 +37,23 @@ func (apiCfg *apiConfig) resetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Hits reset to 0"))
+}
+
+func cleaned(text string) string {
+	profanewords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	}
+	words := strings.Split(text, " ")
+
+	for i, word := range words {
+		if _, ok := profanewords[strings.ToLower(word)]; ok {
+			words[i] = "****"
+		}
+	}
+	return strings.Join(words, " ")
+
 }
 
 func validateHandler(w http.ResponseWriter, r *http.Request) {
@@ -79,13 +97,16 @@ func validateHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		w.Write(dataa)
 		return
+	}
 
-	}
+	cleanProfanity := cleaned(params.Tijelo)
+
 	type odgovor struct {
-		Valid bool `json:"valid"`
+		Cleaned string `json:"cleaned_body"`
 	}
+
 	odgovorb := odgovor{
-		Valid: true,
+		Cleaned: cleanProfanity,
 	}
 	dat, err := json.Marshal(odgovorb)
 	if err != nil {
