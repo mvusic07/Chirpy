@@ -10,15 +10,14 @@ func (cfg *apiConfig) handlerChirpsRetrieveById(w http.ResponseWriter, r *http.R
 	chirpId := r.PathValue("chirpId")
 	chirp, err := cfg.db.GetChirpById(r.Context(), uuid.MustParse(chirpId))
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, "Couldn't retrieve chirp", err)
-		return
+		respondWithError(w, http.StatusNotFound, "Chirp with provided id doesn't exist", err)
 	}
-	chirpResponse := Chirp{
+	chirpStruct := Chirp{
 		ID:        chirp.ID,
 		CreatedAt: chirp.CreatedAt,
 		UpdatedAt: chirp.UpdatedAt,
 		Body:      chirp.Body,
 		UserID:    chirp.UserID,
 	}
-	respondWithJSON(w, http.StatusOK, chirpResponse)
+	respondWithJSON(w, http.StatusOK, chirpStruct)
 }
